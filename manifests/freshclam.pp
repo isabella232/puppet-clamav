@@ -12,6 +12,7 @@
 # <code>clamav::freshclam::proxy_password</code>: http proxy password
 # <code>clamav::freshclam::proxy_port</code>: http proxy port
 # <code>clamav::freshclam::proxy_server</code>: http proxy server
+# <code>clamav::freshclam::config</code>: freshclam configuration file
 #
 class clamav::freshclam (
   $enable = hiera('clamav::freshclam::enable',true),
@@ -23,10 +24,11 @@ class clamav::freshclam (
   $proxy_username = hiera('clamav::freshclam::proxy_username',''),
   $proxy_password = hiera('clamav::freshclam::proxy_password',''),
   $logfile = '/var/log/clamav/freshclam.log',
+  $config = hiera('clamav::freshclam::config','/etc/freshclam.conf')
 ) {
   include clamav::params
 
-  file { '/etc/freshclam.conf':
+  file { $config:
     ensure  => present,
     owner   => $clamav::params::user,
     mode    => '0400',
@@ -43,13 +45,13 @@ class clamav::freshclam (
     command => $command,
     minute  => $minute,
     hour    => $hour,
-    require => File['/etc/freshclam.conf'],
+    require => File[$config],
   }
 
   # remove the freshclam cron that is installed with the package
   file { '/etc/cron.daily/freshclam':
     ensure  => absent,
-    require => File['/etc/freshclam.conf'],
+    require => File[$config],
   }
 
   # ensure proper permissions on our logfile
@@ -57,6 +59,6 @@ class clamav::freshclam (
     ensure  => present,
     owner   => $clamav::params::user,
     mode    => '0644',
-    require => File['/etc/freshclam.conf'],
+    require => File[$config],
   }
 }
