@@ -30,8 +30,9 @@ class clamav::freshclam (
 
   file { $config:
     ensure  => present,
-    owner   => root,
-    mode    => '0644',
+    owner   => $clamav::params::user,
+    group   => root,
+    mode    => '0440',
     content => template('clamav/freshclam.conf.erb'),
     require => Package[$clamav::params::package],
   }
